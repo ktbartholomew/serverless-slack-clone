@@ -42,7 +42,7 @@ async function main() {
         }) + "\n"
       );
     }
-    await new Promise((resolve) => setTimeout(resolve, 40));
+    await new Promise((resolve) => setTimeout(resolve, 4000));
   }
 }
 
