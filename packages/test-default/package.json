@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "esbuild src/index.ts --bundle --outdir=dist --platform=node --external:@aws-sdk* && zip -j dist/index.zip dist/index.js",
-    "lambda:publish": "aws lambda update-function-code --function-name test-default --zip-file fileb://$(pwd)/dist/index.zip",
+    "upload": "aws s3 cp dist/index.zip s3://$(aws ssm get-parameter --name /serverless-slack-clone/s3-bucket --query Parameter.Value --output text)/default.zip",
+    "lambda:update": "aws lambda update-function-code --function-name test-default --s3-bucket $(aws ssm get-parameter --name /serverless-slack-clone/s3-bucket --query Parameter.Value --output text) --s3-key default.zip",
     "test": "echo \"no test specified\" && exit 0"
   },
   "author": "",

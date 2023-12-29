@@ -1,0 +1,31 @@
+Parameters:
+  ProjectName:
+    Type: String
+    Default: "serverless-slack-clone"
+    Description: The name of the project
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: Private
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 30
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+
+  Parameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${ProjectName}/s3-bucket
+      Type: String
+      Value: !Ref S3Bucket
+
+Outputs:
+  S3Bucket:
+    Description: The name of the S3 bucket
+    Value: !Ref S3Bucket

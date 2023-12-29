@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "next build",
-    "dev": "next dev",
-    "start": "next start",
+    "build": "NEXT_PUBLIC_WEBSOCKET_URL=$(aws ssm get-parameter --name /serverless-slack-clone/websocket-url --query Parameter.Value --output text) next build",
+    "dev": "NEXT_PUBLIC_WEBSOCKET_URL=$(aws ssm get-parameter --name /serverless-slack-clone/websocket-url --query Parameter.Value --output text) next dev",
+    "start": "NEXT_PUBLIC_WEBSOCKET_URL=$(aws ssm get-parameter --name /serverless-slack-clone/websocket-url --query Parameter.Value --output text) next start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

@@ -3,6 +3,11 @@ Parameters:
     Type: String
     Default: "serverless-slack-clone"
     Description: The name of the project
+  AssetBucketName:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /serverless-slack-clone/s3-bucket
+    Description: The name of the S3 bucket where assets are stored
+
 Resources:
   DynamoDBTable:
     Type: AWS::DynamoDB::Table
@@ -56,6 +61,13 @@ Resources:
         ThrottlingBurstLimit: 100
       StageVariables:
         DYNAMODB_TABLE_NAME: !Ref DynamoDBTable
+
+  WebSocketUrlParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /${ProjectName}/websocket-url
+      Type: String
+      Value: !Sub "wss://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStage}"
 
   LambdaRole:
     Type: AWS::IAM::Role
@@ -113,6 +125,12 @@ Resources:
                   - execute-api:ManageConnections
                 Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*/*"
 
+  ConnectLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${ProjectName}-connect"
+      RetentionInDays: 7
+
   ConnectLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -126,15 +144,13 @@ Resources:
       MemorySize: 1800
       Role: !GetAtt LambdaRole.Arn
       Code:
-        ZipFile: |
-          // This is a noop handler for now
-          exports.handler = async (event, context) => {
-            console.log(event);
-            return {statusCode: 200}
-          };
+        S3Bucket: !Ref AssetBucketName
+        S3Key: connect.zip
       Environment:
         Variables:
           TABLE_NAME: !Ref DynamoDBTable
+      LoggingConfig:
+        LogGroup: !Ref ConnectLogGroup
 
   ConnectPermission:
     Type: AWS::Lambda::Permission
@@ -143,6 +159,21 @@ Resources:
       FunctionName: !Ref ConnectLambda
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
+
+  ConnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref ApiGateway
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ConnectLambda.Arn}/invocations"
+      IntegrationMethod: POST
+      PayloadFormatVersion: "1.0"
+
+  DefaultLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${ProjectName}-default"
+      RetentionInDays: 7
 
   DefaultLambda:
     Type: AWS::Lambda::Function
@@ -157,15 +188,13 @@ Resources:
       MemorySize: 1800
       Role: !GetAtt LambdaRole.Arn
       Code:
-        ZipFile: |
-          // This is a noop handler for now
-          exports.handler = async (event, context) => {
-            console.log(event);
-            return {statusCode: 200}
-          };
+        S3Bucket: !Ref AssetBucketName
+        S3Key: default.zip
       Environment:
         Variables:
           TABLE_NAME: !Ref DynamoDBTable
+      LoggingConfig:
+        LogGroup: !Ref DefaultLogGroup
 
   DefaultPermission:
     Type: AWS::Lambda::Permission
@@ -175,12 +204,12 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
 
-  ConnectIntegration:
+  DefaultIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
       ApiId: !Ref ApiGateway
       IntegrationType: AWS_PROXY
-      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ConnectLambda.Arn}/invocations"
+      IntegrationUri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DefaultLambda.Arn}/invocations"
       IntegrationMethod: POST
       PayloadFormatVersion: "1.0"
 
@@ -197,3 +226,50 @@ Resources:
       ApiId: !Ref ApiGateway
       RouteKey: $disconnect
       Target: !Sub integrations/${ConnectIntegration}
+
+  JoinRoomRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ApiGateway
+      RouteKey: joinRoom
+      Target: !Sub integrations/${DefaultIntegration}
+
+  SendMessageRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ApiGateway
+      RouteKey: sendMessage
+      Target: !Sub integrations/${DefaultIntegration}
+
+  ListMessagesRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ApiGateway
+      RouteKey: listMessages
+      Target: !Sub integrations/${DefaultIntegration}
+
+  UpdatePresenceRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ApiGateway
+      RouteKey: updatePresence
+      Target: !Sub integrations/${DefaultIntegration}
+
+  UserTypingRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ApiGateway
+      RouteKey: userTyping
+      Target: !Sub integrations/${DefaultIntegration}
+
+  ListUsersRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ApiGateway
+      RouteKey: listUsers
+      Target: !Sub integrations/${DefaultIntegration}
+
+Outputs:
+  WebSocketUrl:
+    Description: The URL of the API Gateway
+    Value: !Sub "wss://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiGatewayStage}"

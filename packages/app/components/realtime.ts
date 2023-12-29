@@ -5,6 +5,13 @@ export const RealtimeContext = createContext<{
   readyState: number;
 }>({ socket: null, readyState: -1 });
 
+const websocketUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL || "";
+
+if (!websocketUrl)
+  console.error(
+    new Error("NEXT_PUBLIC_WEBSOCKET_URL environment variable is not set")
+  );
+
 export function useSocket(userId: string) {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [readyState, setReadyState] = useState<WebSocket["readyState"]>(0);
@@ -13,9 +20,7 @@ export function useSocket(userId: string) {
   useEffect(() => {
     if (!userId) return;
 
-    const s = new WebSocket(
-      `wss://ziy84sz7yl.execute-api.us-west-2.amazonaws.com/production/?authorization=${userId}`
-    );
+    const s = new WebSocket(`${websocketUrl}/?authorization=${userId}`);
 
     const presenceInterval = setInterval(() => {
       if (s.readyState === WebSocket.OPEN) {
