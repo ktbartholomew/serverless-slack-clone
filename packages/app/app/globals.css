@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --dt-color-plt-aubergine-0: 249, 237, 255;
+  --dt-color-plt-aubergine-5: 246, 228, 255;
+  --dt-color-plt-aubergine-10: 244, 218, 255;
+  --dt-color-plt-aubergine-20: 234, 189, 251;
+  --dt-color-plt-aubergine-30: 223, 159, 244;
+  --dt-color-plt-aubergine-40: 211, 137, 231;
+  --dt-color-plt-aubergine-50: 196, 116, 211;
+  --dt-color-plt-aubergine-60: 163, 80, 175;
+  --dt-color-plt-aubergine-70: 131, 56, 138;
+  --dt-color-plt-aubergine-80: 97, 31, 105;
+  --dt-color-plt-aubergine-90: 74, 21, 75;
+  --dt-color-plt-aubergine-100: 57, 6, 58;
+  --dt-color-plt-aubergine-hover: #39063a21;
+  --dt-color-plt-aubergine-pressed: #39063a38;
+}
