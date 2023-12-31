@@ -1,10 +1,26 @@
 # Serverless Slack Demo
 
+[Read the blog post](https://keithbartholomew.com/blog/posts/2023-12-29-build-a-slack-clone-with-api-gateway-websockets-api/)
+
 This is a small demo that uses an [API Gateway WebSocket API](https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-websocket-api.html), several Lambda functions, and a DynamoDB table to create an app that behaves like Slack.
 
 I built this because a lot of the API Gateway WebSocket API documentation only covers simple cases like direct two-way communication, or broadcast messaging. I wanted to build something that was a little more realistic. This demo covers some more advanced communication flows like a Pub/Sub pattern, where message notifications are only sent to the users that are subscribed to a channel.
 
-This demo also uses the "Single-Table Design" pattern for DynamoDB, which is a pattern that I've found to be very useful for building serverless applications. You can read more about that here: [Single-Table Design with DynamoDB](https://www.alexdebrie.com/posts/dynamodb-single-table/). Trying to model the data access patterns needed for a Slack clone using a single DynamoDB table turned out to be a really fun exercise.
+This demo also uses the "Single-Table Design" pattern for DynamoDB, which is a pattern that I've found to be very useful for making the most of DynamoDB. You can read more about that here: [Single-Table Design with DynamoDB](https://www.alexdebrie.com/posts/dynamodb-single-table/). Trying to model the data access patterns needed for a Slack clone using a single DynamoDB table turned out to be a really fun exercise.
+
+## Getting Started
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/en/) (v20 or higher)
+- [AWS CLI](https://aws.amazon.com/cli/)
+- An AWS account and the ability to provision IAM roles and other resources in it
+
+### Deploy the demo
+
+```bash
+npm ci && npm run publish
+```
 
 ## Components
 

@@ -17,7 +17,7 @@ async function main() {
 
   const ws = new WebSocket(process.env.URL, {
     headers: {
-      authorization: "Bearer zwn17MznDSVvJD4Z-KnNF",
+      authorization: "Bearer jP3WGdnq9bJydLlY3BPxI",
     },
   });
 
@@ -38,7 +38,7 @@ async function main() {
       ws.send(
         JSON.stringify({
           event: "sendMessage",
-          detail: { message: line, room: "general" },
+          detail: { message: line, room: "quotes" },
         }) + "\n"
       );
     }
