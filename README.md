@@ -1,4 +1,4 @@
-# Serverless Slack Demo
+# Serverless Slack Clone
 
 [Read the blog post](https://keithbartholomew.com/blog/posts/2023-12-29-build-a-slack-clone-with-api-gateway-websockets-api/)
 
